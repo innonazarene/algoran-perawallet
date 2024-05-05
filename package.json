@@ -10,7 +10,11 @@
     "postinstall": "nuxt prepare"
   },
   "dependencies": {
+    "@browsery/util": "^0.12.5",
+    "@perawallet/connect": "^1.3.4",
+    "buffer": "^6.0.3",
     "nuxt": "^3.11.2",
+    "process": "^0.11.10",
     "vue": "^3.4.21",
     "vue-router": "^4.3.0"
   }
