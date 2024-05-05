@@ -1,6 +1,9 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
     devtools: { enabled: true },
+    $meta: {
+        name: "Algorand Broker"
+    },
     ssr: false,
     alias: {
         process: "process/browser",
