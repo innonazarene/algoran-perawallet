@@ -1,6 +1,5 @@
 <script setup>
 import { PeraWalletConnect } from '@perawallet/connect'
-import { Transaction } from "algosdk"
 const wallet = ref(null)
 const walletOpt = {
     shouldShowSignTxnToast: false
