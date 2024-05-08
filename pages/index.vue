@@ -1,67 +1,57 @@
 <script setup>
 import { PeraWalletConnect } from '@perawallet/connect'
-import { Transaction } from "algosdk"
+import algosdk from 'algosdk'
+
+const testNetClient = new algosdk.Algodv2("", "https://testnet-api.algonode.cloud", "");
+
 const route = useRoute()
 const queryParam = ref(null)
 queryParam.value = route.query
 const walletOpt = {
-    shouldShowSignTxnToast: false
-}
-const txn = {
-    from: queryParam.value.account_id,
-    to: queryParam.value.account_id,
-    amount: 12, // 1 Algo
-    firstRound: 1,
-    lastRound: 1,
-    genesisID: 'genesis-id',
-    genesisHash: 'genesis-hash',
+    shouldShowSignTxnToast: false,
+    chainId: "416001"
 }
 
-
-
-const wallet = new PeraWalletConnect(walletOpt)
+const wallet = ref(null)
+wallet.value = new PeraWalletConnect(walletOpt)
 const intiialize = async () => {
-    if ( !wallet.connector ) {
+    await wallet.value.reconnectSession()
+}
+const transact = async () => {
+    const suggestedParams = await testNetClient.getTransactionParams().do();
 
+    const txn = algosdk.makePaymentTxnWithSuggestedParamsFromObject({
+        from: wallet.value.connector._accounts[0],
+        to: queryParam.value.account_id,
+        amount: 1000000, //1 algorand
+        note: new Uint8Array(Buffer.from("Thankyou for Protecting our Earth")),
+        suggestedParams
+    })
+
+    const txnsToSign = [{txn, message: "This is a transaction message"}]
+
+    try {
+        const signedTxnGroup = await wallet.value.signTransaction([txnsToSign])
+        console.log(signedTxnGroup)
+        const {txId} = await testNetClient.sendRawTransaction(signedTxnGroup).do()
+        console.log(txId)
+    } catch (error) {
+        console.log("Couldn't sign asset transfer txns",error);
     }
-    // if ( wallet.isConnected ) {
-    //     await wallet
-    //         .connect()
-    //         .then((newAccounts) => {
-    //             peraWallet.connector?.on("disconnect", handleDisconnectWalletClick);
-    //             setAccountAddress(newAccounts[0]);
-    //         })
-    // }else{
-    //     await wallet.reconnectSession()
-    // }
-    // const signedTxn = await wallet.signTransaction([txn])
-    // console.log(signedTxn)
-    wallet
-        .connect()
-        .then((newAccounts) => {
-            // Setup the disconnect event listener
-            wallet.connector?.on("disconnect", handleDisconnectWalletClick);
-            setAccountAddress(newAccounts[0]);
-        })
-        .reject((error) => {
-            // You MUST handle the reject because once the user closes the modal, peraWallet.connect() promise will be rejected.
-            // For the async/await syntax you MUST use try/catch
-            if (error?.data?.type !== "CONNECT_MODAL_CLOSED") {
-            // log the necessary errors
-            }
-        });
-
-
 }
-const transact = () => {
-    closePeraWalletSignTxnToast()
-}
-
 const handleDisconnectWalletClick = () => {
-    wallet.disconnect();
+    wallet.value.disconnect();
     setAccountAddress(null);
 }
+const handleConnectWalletClick = () => {
+    wallet.value
+    .connect()
+    .then((newAccounts) => {
+        setAccountAddress(newAccounts[0]);
+    })
+}
 intiialize()
+transact()
 </script>
 <template>
     <div>
@@ -71,14 +61,8 @@ intiialize()
     </div>
 
     <div>
-        <button @click="handleDisconnectWalletClick">Disconnect</button>
+        <button v-if="!wallet.connector" @click="handleConnectWalletClick">Connect</button>
+        <button v-else @click="handleDisconnectWalletClick">Disconnect</button>
     </div>
 
-    <div>
-        <p>
-            <NuxtLink to="https://dispenser.testnet.aws.algodev.network/">
-                Despense Test
-            </NuxtLink>
-        </p>
-    </div>
 </template>
