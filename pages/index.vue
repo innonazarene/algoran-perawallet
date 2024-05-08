@@ -23,7 +23,7 @@ const transact = async () => {
     const txn = algosdk.makePaymentTxnWithSuggestedParamsFromObject({
         from: wallet.value.connector._accounts[0],
         to: queryParam.value.account_id,
-        amount: queryParam.value.amount, //1 algorand
+        amount: BigInt(queryParam.value.amount), //1 algorand
         note: new Uint8Array(Buffer.from("Thankyou for Protecting our Earth")),
         suggestedParams
     })
