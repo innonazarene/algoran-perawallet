@@ -27,14 +27,7 @@ intiialize()
 </script>
 <template>
     <div>
-        <p>
-            {{ wallet }}
-        </p>
-    </div>
-
-    <div>
         <button v-if="!wallet.connector" @click="handleConnectWalletClick">Connect</button>
         <button v-else @click="handleDisconnectWalletClick">Disconnect</button>
     </div>
-
 </template>
